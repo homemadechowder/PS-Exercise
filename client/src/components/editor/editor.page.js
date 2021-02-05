@@ -112,14 +112,12 @@ export default function Editor(){
         let newLayout = config;
         let keyPath = [];
         let newId = id;
-
-
         var targetDiv = document.getElementById(actionTarget)
-        
+
         if (targetDiv.childNodes.length !== 0){
         targetDiv.removeChild(targetDiv.childNodes[0])
         }
-        
+
         console.log(actionTarget);
         for (var i = 1; i < actionTarget.length; i++){
            if (actionTarget[i] === '0'){
@@ -197,14 +195,37 @@ export default function Editor(){
             {config &&
             <Grid container>
                 <Grid item xs>
-                    <section className='editor__image-section'>
-                        
+                    <section className='editor__image-section'> 
                         <img 
                             className='editor__pallet-image' 
                             src = 'https://static5.depositphotos.com/1000350/432/i/950/depositphotos_4327684-stock-photo-doctor-with-stethoscope-fixing-laptop.jpg'
                             draggable="true" onDragStart={(e)=>drag(e)}
                         ></img>
-                      
+                        <img 
+                            className='editor__pallet-image' 
+                            src = 'https://mk0knowtechie1qof48y.kinstacdn.com/wp-content/uploads/2019/11/dark-stock-photos-main-kt.jpg'
+                            draggable="true" onDragStart={(e)=>drag(e)}
+                        ></img>
+                        <img 
+                            className='editor__pallet-image' 
+                            src = 'https://pbs.twimg.com/media/EW8GhG_XkAEOyAh.jpg'
+                            draggable="true" onDragStart={(e)=>drag(e)}
+                        ></img>
+                        <img 
+                            className='editor__pallet-image' 
+                            src = 'https://www.fodors.com/wp-content/uploads/2020/04/BizarreStockPhotos__HERO_shutterstock_1308961057.jpg'
+                            draggable="true" onDragStart={(e)=>drag(e)}
+                        ></img>
+                        <img 
+                            className='editor__pallet-image' 
+                            src = 'https://www.adweek.com/files/2015_May/iStock-Unfinished-Business-6.jpg'
+                            draggable="true" onDragStart={(e)=>drag(e)}
+                        ></img>
+                         <img 
+                            className='editor__pallet-image' 
+                            src = 'https://st2.depositphotos.com/1912933/7560/i/950/depositphotos_75608753-stock-photo-angry-old-woman-with-an.jpg'
+                            draggable="true" onDragStart={(e)=>drag(e)}
+                        ></img>
                     </section>
                 </Grid>
             <Grid item xs>

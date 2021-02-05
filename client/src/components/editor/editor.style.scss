@@ -65,7 +65,10 @@ div.editor__container{
     }
 
     section.editor__image-section{
-        padding-top: 200px
+        width: 500px;
+        position: fixed;
+        left: 5%;
+        padding-top: 120px
     }
 
     img.editor__drag-image{
@@ -79,8 +82,8 @@ div.editor__container{
     }
 
     .editor__pallet-image{
-        width: 200px;
-        height: 100px;
+        width: 250px;
+        height: 200px;
     }
 
     div.editor__box-row{
