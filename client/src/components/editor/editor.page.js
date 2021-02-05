@@ -1,64 +1,14 @@
 import React, {useEffect, useState} from 'react'
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
-import resolve from '../../scripts/resolve';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import assign from '../../scripts/assign';
 
 import './editor.style.scss';
 
 export default function Editor(){
 
-    let boxStyle = {
-        border: '0.1px solid lightgrey',
-        height: '50%',
-        cursor: 'pointer', 
-        // textAlign: 'center',
-    }
-
-    let boxStyleV = {
-        border: '0.1px solid grey',
-        height: '25%',
-    }
-
-    /*
-    {
-            id: '0',
-            mode: 'horizontal',
-            split0: {
-                id: '00',
-                mode: 'horizontal',
-                split0:{
-                    id: '000',
-                    mode: 'horizontal',
-                },
-                split1:{
-                    id: '001',
-                    mode: 'vertical',
-                }
-                
-            },
-            split1:{
-                id: '10',
-                mode: 'vertical',
-                split0:{
-                    id: '100',
-                    mode: 'vertical',
-                    split0:{
-                        id: '1000',
-                        mode: 'vertical',
-                        split0:{
-                            id: '10000',
-                            mode: 'vertical',
-                        }
-                    }
-                },
-                split1:{
-                    id: '110',
-                    mode: 'vertical',
-                }
-            }
-        },
-    */
     const defaultLayout = [
         {
             id: '0',
@@ -75,14 +25,13 @@ export default function Editor(){
 
     ]
 
-    const [config, setConfig] = useState(defaultLayout);
+    const [config, setConfig] = useState();
+    const [savedLayout, setSavedLayout] = useState([]);
     const [actionTarget, setActionTarget] = useState();
-
+    let layoutList = [];
     const addTarget = (event) => {
-        setActionTarget(event.target.id);  
-        console.log(event.target.id); 
+        setActionTarget(event.target.id);   
     }
-
 
     const handleFirstSplit = (split) =>{        
         if (split.mode){
@@ -145,8 +94,7 @@ export default function Editor(){
             </>
         )
     }
-
-
+ 
     const split = (mode) => {
         const id = actionTarget[0];
         let newLayout = config;
@@ -166,8 +114,6 @@ export default function Editor(){
            }
         }
 
-        console.log(newId);
-
         if (typeof newLayout[id].mode === 'undefined'){
             newLayout[id].mode = mode
         } else {
@@ -177,15 +123,33 @@ export default function Editor(){
                 assign(newLayout[id], keyPath, {id: `${newId}`, mode: mode})
             }
         }
-        console.log(newLayout)
         setConfig([...newLayout]);
     }
 
-    
+    const saveLayout = (currentConfig) => {
+        // honestly does not make any sense to me but this will do for now
+        layoutList = [...JSON.parse(JSON.stringify(savedLayout))];
+        layoutList.push(JSON.parse(JSON.stringify(currentConfig)));    
+        alert(`Saved as: Save Item ${layoutList.length}`)
+        setSavedLayout(layoutList);
+    }
+
+
+    const handleSavedLayout = () => {
+        return(
+        <>
+            {savedLayout.map((item,i)=>{
+                return(
+                <button className='editor__load-button' key={`${i}+${item}`} onClick={()=>setConfig([...item])}>Saved Item {i+1}</button>
+                )
+            })} 
+        </>
+        )
+    }
 
     useEffect(()=>{
-        console.log(config)
-    },[config])
+        setConfig(defaultLayout)
+    },[])
 
 
     return(
@@ -198,39 +162,33 @@ export default function Editor(){
                     <Grid item className='editor__action-item' xs={2} onClick={()=>split('horizontal')}>
                         SPLIT HORIZONTALLY
                     </Grid>
-                    <Grid item className='editor__action-item' xs={2}>
+                    <Grid item className='editor__action-item' xs={2} onClick={()=>saveLayout(config)}>
                         SAVE
                     </Grid>
                     <Grid item className='editor__action-item' xs={2}>
                         LOAD
+                        {savedLayout.length !== 0 &&
+                        <>
+                        {handleSavedLayout()}
+                        </>}
                     </Grid>
+
                 </Grid>
             </div>
 
             
             {config &&
+           
             <section className='editor__box-section'>
                 {config.map((box)=>{
+                    
                     return(      
-                        // <Grid container key={`box${box.id}`} className='editor__box-row'>
-                        //     <Grid container tabindex='0' item xs id={box.id} style={boxStyle} onClick={(e)=>addTarget(e)}>
                         <>
                             {handleFirstSplit(box)} 
                         </> 
-                        //     </Grid>    
-                                 
-                        // </Grid>
                     )
                  })}
 
-            {/* <Grid container direction="column"key={`box2`} className='editor__box-row'>
-                <Grid container direction="column" tabindex='0' item xs id={2} style={boxStyle} onClick={(e)=>addTarget(e)}>
-                 1
-                </Grid>
-                <Grid container direction="column" tabindex='0' item xs id={2} style={boxStyle} onClick={(e)=>addTarget(e)}>
-                 1
-                </Grid>
-            </Grid> */}
             </section>  }
         </Container>
         

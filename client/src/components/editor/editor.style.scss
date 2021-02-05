@@ -15,18 +15,44 @@ div.editor__container{
             line-height: 40px;
 
             div.editor__action-item{
+                height: 70px;
                 line-height: 70px;
                 transition: all 0.4s;
                 cursor: pointer;
+
+                button.editor__load-button{
+                    width: 100%;
+                    display: none;
+                    height: 0%;
+                    background-color: rgb(233, 227, 227);
+                    color: #b68751;
+                    border: none;
+                    transition: all 0.5s;
+            
+                }
+            
+                button.editor__load-button:hover{
+                    background-color:white;
+                }
+
+                button.editor__load-button:focus{
+                    border: none;
+                }
+            }
+
+            div.editor__action-item:hover > button{
+                display: block;
+                height: 102%;
             }
 
             div.editor__action-item:hover{
                 background-color: rgb(233, 227, 227);
                 color: #b68751
-
             }
         }
     }
+
+   
 
     section.editor__box-section{
         width: 500px;
