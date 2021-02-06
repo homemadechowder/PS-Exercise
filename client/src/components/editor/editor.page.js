@@ -57,10 +57,9 @@ export default function Editor(){
         ev.preventDefault();
         const source = ev.dataTransfer.getData("source");
         const sourceParent = ev.dataTransfer.getData("sourceParent");
-        const sourceId = ev.dataTransfer.getData("text");
         const targetDiv = document.getElementById(ev.target.id)
         const sourceDiv = document.getElementById(source);
-
+        
         const targetClone = targetDiv.innerHTML
         const targetImageString = targetClone.split('&quot;'); 
 
@@ -68,52 +67,44 @@ export default function Editor(){
             targetDiv.removeChild(targetDiv.childNodes[0])
         }
 
-        function attachDivs(targetDiv, sourceDiv, imgDiv, imgDivSource, sourceImg){
-            sourceDiv.appendChild(imgDiv)
-            sourceDiv.removeChild(sourceImg);
-            targetDiv.appendChild(imgDivSource);     
-        }
+        if (document.getElementById(sourceParent) !== null){
+            const sourceImg = sourceDiv.childNodes[0] || null;
 
-        function splitType(source, sourceParent, sourceId, targetDiv, sourceDiv, targetClone, targetImageString) {
-            if (document.getElementById(sourceParent) !== null){
-                const sourceImg = sourceDiv.childNodes[0];
-                var imgDivSource = document.createElement('img');
+            var imgDivSource = document.createElement('img');
+            imgDivSource.style=`background-image: url(${targetImageString[1]})` 
+            imgDivSource.classList.add('editor__drag-image')
 
-                imgDivSource.style=`background-image: url(${targetImageString[1]})` 
-                imgDivSource.classList.add('editor__drag-image')
-                
-                if (typeof sourceImg !== 'undefined'){
-
-                    //executed when attempted to drag empty block into block with picture
-                    if (sourceImg.style.backgroundImage === 'url("undefined")'){
-                        sourceDiv.removeChild(sourceDiv.childNodes[0])
-                        ev.target.appendChild(imgDivSource); 
-                    } else {
-                        const background = sourceImg.style.backgroundImage
-                        var imgDiv = document.createElement('img')
-                        imgDiv.style=`background-image: ${background}`
-                        imgDiv.setAttribute('id', `image${ev.target.id}`)
-                        imgDiv.classList.add('editor__drag-image')
-
-                        window.onload = attachDivs(targetDiv, sourceDiv, imgDiv, imgDivSource, sourceImg)
-                    }
+            if (sourceImg !== null){
+                if (sourceImg.style.backgroundImage === 'url("undefined")'){
+                    console.log('undefined stuff')
+                    sourceDiv.removeChild(sourceDiv.childNodes[0])
+                    ev.target.appendChild(imgDivSource); 
                 } else {
-                    var imgDivDummy = document.createElement('img')
-                    imgDivDummy.style=`background-image: url("undefined")}`
-                    imgDivDummy.classList.add('editor__drag-image')
-                    sourceDiv.appendChild(imgDivDummy)
-                    ev.target.appendChild(imgDivSource);
+                    const background = sourceImg.style.backgroundImage
+                    var imgDiv = document.createElement('img')
+                    imgDiv.style=`background-image: ${background}`
+                    imgDiv.setAttribute('id', `image${ev.target.id}`)
+                    imgDiv.classList.add('editor__drag-image')
+
+                    targetDiv.appendChild(imgDiv)
+                    sourceDiv.removeChild(sourceImg);
+                    sourceDiv.appendChild(imgDivSource); 
                 }
             } else {
-                var data = ev.dataTransfer.getData("text");
-                var img = document.createElement('img'); 
-                img.style=`background-image: url(${data})`
-                img.classList.add('editor__drag-image')
-                ev.target.appendChild(img);
-            }
+                var imgDivDummy = document.createElement('img')
+                imgDivDummy.style=`background-image: url("undefined")}`
+                imgDivDummy.classList.add('editor__drag-image')
+                sourceDiv.appendChild(imgDivDummy)
+                ev.target.appendChild(imgDivSource);
             }
 
-        splitType(source, sourceParent, sourceId, targetDiv, sourceDiv, targetClone, targetImageString);
+        } else {
+            var data = ev.dataTransfer.getData("text");
+            var img = document.createElement('img'); 
+            img.style=`background-image: url(${data})`
+            img.classList.add('editor__drag-image')
+            ev.target.appendChild(img);
+        }
     }
 
 
