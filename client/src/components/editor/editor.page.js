@@ -247,6 +247,9 @@ export default function Editor(){
                         {handleSavedLayout()}
                         </>}
                     </Grid>
+                    <Grid item className='editor__action-item' xs={2} onClick={()=>setConfig([...config, {id: config.length}])}>
+                        ADD
+                    </Grid>
 
                 </Grid>
             </div>
