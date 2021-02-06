@@ -57,68 +57,65 @@ export default function Editor(){
         ev.preventDefault();
         const source = ev.dataTransfer.getData("source");
         const sourceParent = ev.dataTransfer.getData("sourceParent");
-        // const index = source[source.length-1]
+        const sourceId = ev.dataTransfer.getData("text");
         const targetDiv = document.getElementById(ev.target.id)
-        console.log(targetDiv);
         const sourceDiv = document.getElementById(source);
+
         const targetClone = targetDiv.innerHTML
         const targetImageString = targetClone.split('&quot;'); 
-        console.log(targetImageString[1]);
-        console.log('dragged to >>>', targetDiv)
 
         if (targetDiv.childNodes.length !== 0){
             targetDiv.removeChild(targetDiv.childNodes[0])
         }
 
-        console.log('sourceParent is >>>', sourceParent);
-        if (document.getElementById(sourceParent) !== null){
-            // const sourceDiv = sourceDivParent.childNodes[index]
-            console.log('dragged from >>>', sourceDiv)
-            if (sourceDiv === targetDiv){
-                console.log('is same div'); 
-            }
-            const sourceImg = sourceDiv.childNodes[0] || null;
-            var imgDivSource = document.createElement('img');
-            imgDivSource.style=`background-image: url(${targetImageString[1]})` 
-            imgDivSource.classList.add('editor__drag-image')
+        function attachDivs(targetDiv, sourceDiv, imgDiv, imgDivSource, sourceImg){
+            sourceDiv.appendChild(imgDiv)
+            sourceDiv.removeChild(sourceImg);
+            targetDiv.appendChild(imgDivSource);     
+        }
 
-            sourceImg ? console.log('source img >>>', sourceImg.style.backgroundImage) : console.log('its empty div')
+        function splitType(source, sourceParent, sourceId, targetDiv, sourceDiv, targetClone, targetImageString) {
+            if (document.getElementById(sourceParent) !== null){
+                const sourceImg = sourceDiv.childNodes[0];
+                var imgDivSource = document.createElement('img');
 
-            if (sourceImg !== null){
-                console.log('sourceImg not null but is >>>', sourceImg)
-                if (sourceImg.style.backgroundImage === 'url("undefined")'){
-                    console.log('undefined stuff')
-                    sourceDiv.removeChild(sourceDiv.childNodes[0])
-                    ev.target.appendChild(imgDivSource); 
+                imgDivSource.style=`background-image: url(${targetImageString[1]})` 
+                imgDivSource.classList.add('editor__drag-image')
+                
+                if (typeof sourceImg !== 'undefined'){
+
+                    //executed when attempted to drag empty block into block with picture
+                    if (sourceImg.style.backgroundImage === 'url("undefined")'){
+                        sourceDiv.removeChild(sourceDiv.childNodes[0])
+                        ev.target.appendChild(imgDivSource); 
+                    } else {
+                        const background = sourceImg.style.backgroundImage
+                        var imgDiv = document.createElement('img')
+                        imgDiv.style=`background-image: ${background}`
+                        imgDiv.setAttribute('id', `image${ev.target.id}`)
+                        imgDiv.classList.add('editor__drag-image')
+
+                        window.onload = attachDivs(targetDiv, sourceDiv, imgDiv, imgDivSource, sourceImg)
+                    }
                 } else {
-                    console.log('not undef')
-                    const background = sourceImg.style.backgroundImage
-                    var imgDiv = document.createElement('img')
-                    imgDiv.style=`background-image: ${background}`
-                    imgDiv.classList.add('editor__drag-image')
-                    targetDiv.appendChild(imgDiv)
-                    sourceDiv.removeChild(sourceImg);
-                    sourceDiv.appendChild(imgDivSource);  
+                    var imgDivDummy = document.createElement('img')
+                    imgDivDummy.style=`background-image: url("undefined")}`
+                    imgDivDummy.classList.add('editor__drag-image')
+                    sourceDiv.appendChild(imgDivDummy)
+                    ev.target.appendChild(imgDivSource);
                 }
             } else {
-                console.log('test');
-                console.log(sourceDiv)
-                var imgDivDummy = document.createElement('img')
-                imgDivDummy.style=`background-image: url("undefined")}`
-                imgDivDummy.classList.add('editor__drag-image')
-                sourceDiv.appendChild(imgDivDummy)
-                ev.target.appendChild(imgDivSource);
+                var data = ev.dataTransfer.getData("text");
+                var img = document.createElement('img'); 
+                img.style=`background-image: url(${data})`
+                img.classList.add('editor__drag-image')
+                ev.target.appendChild(img);
+            }
             }
 
-        } else {
-            var data = ev.dataTransfer.getData("text");
-            var img = document.createElement('img'); 
-            img.style=`background-image: url(${data})`
-            img.classList.add('editor__drag-image')
-            ev.target.appendChild(img);
-        }
-        console.log('*****************************************************')
+        splitType(source, sourceParent, sourceId, targetDiv, sourceDiv, targetClone, targetImageString);
     }
+
 
     const handleFirstSplit = (split) =>{        
         if (split.mode){
@@ -220,7 +217,6 @@ export default function Editor(){
         layoutList = JSON.parse(JSON.stringify([...savedLayout]));
         layoutList.push(JSON.parse(JSON.stringify(currentConfig)));    
         alert(`Saved as: Save Item ${layoutList.length}`)
-        console.log(layoutList);
         setSavedLayout(JSON.parse(JSON.stringify(layoutList)));
     }
 
