@@ -47,36 +47,67 @@ export default function Editor(){
       
     const drag = (ev) => {
         ev.dataTransfer.setData("text", ev.target.id);
-        
-        const source = ev.target.id ? document.getElementById(ev.target.id).parentNode.id : '';
-        ev.dataTransfer.setData("source", source);
+        const source = ev.target.id ? document.getElementById(ev.target.id).id : '';
+        const sourceParent = ev.target.id ? document.getElementById(ev.target.id).parentNode.id : '';
+        ev.dataTransfer.setData("source", source)
+        ev.dataTransfer.setData("sourceParent", sourceParent);
     }
       
     const drop = (ev) => {
         ev.preventDefault();
-
         const source = ev.dataTransfer.getData("source");
+        const sourceParent = ev.dataTransfer.getData("sourceParent");
+        // const index = source[source.length-1]
+        const targetDiv = document.getElementById(ev.target.id)
+        console.log(targetDiv);
         const sourceDiv = document.getElementById(source);
-        console.log('source div >>>', sourceDiv)
-        const targetDiv = document.getElementById(ev.target.id);
-        console.log('target div >>>', targetDiv)
+        const targetClone = targetDiv.innerHTML
+        const targetImageString = targetClone.split('&quot;'); 
+        console.log(targetImageString[1]);
+        console.log('dragged to >>>', targetDiv)
 
         if (targetDiv.childNodes.length !== 0){
             targetDiv.removeChild(targetDiv.childNodes[0])
         }
 
-        if (sourceDiv !== null){
-
-            const sourceImg = sourceDiv.childNodes[0].childNodes[0] || null;
+        console.log('sourceParent is >>>', sourceParent);
+        if (document.getElementById(sourceParent) !== null){
+            // const sourceDiv = sourceDivParent.childNodes[index]
+            console.log('dragged from >>>', sourceDiv)
+            if (sourceDiv === targetDiv){
+                console.log('is same div'); 
+            }
+            const sourceImg = sourceDiv.childNodes[0] || null;
+            var imgDivSource = document.createElement('img');
+            imgDivSource.style=`background-image: url(${targetImageString[1]})` 
+            imgDivSource.classList.add('editor__drag-image')
 
             sourceImg ? console.log('source img >>>', sourceImg.style.backgroundImage) : console.log('its empty div')
-            console.log('target Div >>>', targetDiv.innerHTML);
+
             if (sourceImg !== null){
-                const background = sourceImg.style.backgroundImage
-                var imgDiv = document.createElement('img')
-                imgDiv.style=`background-image: ${background}`
-                imgDiv.classList.add('editor__drag-image')
-                ev.target.appendChild(imgDiv)
+                console.log('sourceImg not null but is >>>', sourceImg)
+                if (sourceImg.style.backgroundImage === 'url("undefined")'){
+                    console.log('undefined stuff')
+                    sourceDiv.removeChild(sourceDiv.childNodes[0])
+                    ev.target.appendChild(imgDivSource); 
+                } else {
+                    console.log('not undef')
+                    const background = sourceImg.style.backgroundImage
+                    var imgDiv = document.createElement('img')
+                    imgDiv.style=`background-image: ${background}`
+                    imgDiv.classList.add('editor__drag-image')
+                    targetDiv.appendChild(imgDiv)
+                    sourceDiv.removeChild(sourceImg);
+                    sourceDiv.appendChild(imgDivSource);  
+                }
+            } else {
+                console.log('test');
+                console.log(sourceDiv)
+                var imgDivDummy = document.createElement('img')
+                imgDivDummy.style=`background-image: url("undefined")}`
+                imgDivDummy.classList.add('editor__drag-image')
+                sourceDiv.appendChild(imgDivDummy)
+                ev.target.appendChild(imgDivSource);
             }
 
         } else {
@@ -86,7 +117,7 @@ export default function Editor(){
             img.classList.add('editor__drag-image')
             ev.target.appendChild(img);
         }
-        
+        console.log('*****************************************************')
     }
 
     const handleFirstSplit = (split) =>{        
@@ -113,11 +144,11 @@ export default function Editor(){
     const handleSplit0 = (split) =>{
         if(typeof split !== 'undefined'){
         return(
-            <Grid container item direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
-                <Grid tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+            <Grid container item id={`id${split.id}`} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
+                <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
                     {handleSplit0(split.split0)}
                 </Grid>
-                <Grid  tabindex='0' item xs id={split.split1?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split1?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
                     {handleSplit1(split.split1)}
                 </Grid>
             </Grid>
@@ -131,11 +162,11 @@ export default function Editor(){
     const handleSplit1 = (split) =>{
         if(typeof split !== 'undefined'){
             return(
-                <Grid container item direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
-                    <Grid  tabindex='0' item xs id={typeof split.split0 !== 'undefined' ?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                <Grid container item id={`id${split.id}`} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
+                    <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split0 !== 'undefined' ?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
                         {handleSplit0(split.split0)}
                     </Grid>
-                    <Grid  tabindex='0' item xs id={typeof split.split1 !== 'undefined' ?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                    <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split1 !== 'undefined' ?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
                         {handleSplit1(split.split1)}
                     </Grid>
                 </Grid>
@@ -147,6 +178,8 @@ export default function Editor(){
     }
  
     const split = (mode) => {
+
+        if (actionTarget){
         const id = actionTarget[0];
         let newLayout = config;
         let keyPath = [];
@@ -179,6 +212,7 @@ export default function Editor(){
             }
         }
         setConfig([...newLayout]);
+        }
     }
 
     const saveLayout = (currentConfig) => {
