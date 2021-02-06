@@ -67,8 +67,8 @@ div.editor__container{
     section.editor__image-section{
         width: 500px;
         position: fixed;
-        left: 5%;
-        padding-top: 120px
+        left: 8%;
+        padding-top: 120px;
     }
 
     img.editor__drag-image{
@@ -92,6 +92,7 @@ div.editor__container{
         position: relative;
         margin: 20px auto 20px auto;
         border: 0.1px solid lightgrey;
+        background-color: #fafafa;
         div.editor__box{
             font-size: 15px;
             height: 100%;
