@@ -61,13 +61,15 @@ export default function Editor(){
         const sourceDiv = document.getElementById(source);
         
         const targetClone = targetDiv.innerHTML
-        const targetImageString = targetClone.split('&quot;'); 
+        const targetImageString = targetClone.split('&quot;');
+        
 
+        
         if (targetDiv.childNodes.length !== 0){
             targetDiv.removeChild(targetDiv.childNodes[0])
         }
-
-        if (document.getElementById(sourceParent) !== null){
+        if (sourceDiv !== null){
+            //means that the div itself has something innit
             const sourceImg = sourceDiv.childNodes[0] || null;
 
             var imgDivSource = document.createElement('img');
@@ -76,7 +78,6 @@ export default function Editor(){
 
             if (sourceImg !== null){
                 if (sourceImg.style.backgroundImage === 'url("undefined")'){
-                    console.log('undefined stuff')
                     sourceDiv.removeChild(sourceDiv.childNodes[0])
                     ev.target.appendChild(imgDivSource); 
                 } else {
