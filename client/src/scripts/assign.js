@@ -6,6 +6,7 @@ export default function assign(obj, keyPath, value) {
         obj[key] = {}
       }
       obj = obj[key];
+
     }
     obj[keyPath[lastKeyIndex]] = value;
  }

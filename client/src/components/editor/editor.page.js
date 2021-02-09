@@ -1,10 +1,9 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 import Grid from '@material-ui/core/Grid';
 import Container from '@material-ui/core/Container';
 import assign from '../../scripts/assign';
 
 import './editor.style.scss';
-import resolve from '../../scripts';
 
 const imageList = [
     'https://static5.depositphotos.com/1000350/432/i/950/depositphotos_4327684-stock-photo-doctor-with-stethoscope-fixing-laptop.jpg',
@@ -30,7 +29,21 @@ const defaultLayout = [
     },
     {
         id: '4',
-        img: 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg'
+        image: 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg',
+        mode: 'horizontal',
+        split0:{
+            id: '40',
+            image: 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg',
+            mode: 'vertical',
+            split0:{
+                id:'400',
+                image: 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg'
+            }
+        },
+        split1:{
+            id: '41',
+            image:  'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg'
+        }
     }
 ]
 
@@ -44,7 +57,6 @@ export default function Editor(){
 
     const addTarget = (ev) => {
         setActionTarget(ev.target.id);   
-        console.log(ev.target.id);
     }
 
     const allowDrop = (ev) => {
@@ -62,18 +74,26 @@ export default function Editor(){
 
     const dropObject = (ev) =>{
         const source = ev.dataTransfer.getData("source");
+        const sourceIndex = source[0];
         const sourceParent = ev.dataTransfer.getData("sourceParent");
         const targetId = ev.target.id;
         const targetIndex = targetId[0];
         const targetDiv = document.getElementById(ev.target.id)
         const sourceDiv = document.getElementById(source);
+        const targetDivClone = targetDiv.innerHTML;
+        const targetImageString = targetDivClone.split('&quot;');
+
         let imgData = ev.dataTransfer.getData("text");
+        let imgDataSource;
+
+    
                
         let newLayout = config;
         let keyPath = [];   
+        let sourceKeyPath = [];
         let newId = targetId
-
-        for (var i = 2; i < targetId.length; i++){
+        // find path to target 
+        for (var i = 1; i < targetId.length; i++){
             if (targetId[i] === '0'){
                 keyPath.push('split0')
                 newId += targetId[i];
@@ -85,112 +105,103 @@ export default function Editor(){
             }
         }
 
-        let resolvePath = keyPath.join('.')
-        
-        console.log(keyPath)
+        // find path to source
+        for (var j = 1; j < source.length; j++){
+            if (source[j] === '0'){
+                sourceKeyPath.push('split0')
+            } else if (source[j] === '1'){
+                sourceKeyPath.push('split1')
+            } else {
+                break;
+            }
+        }
 
         if (source === ''){
-            imgData = ev.dataTransfer.getData("text");
+            imgData = ev.dataTransfer.getData("text");  
         } else {
-
-            // if (resolvePath === ''){
-            //     let originalConfig = config[targetIndex];
-            //     console.log(originalConfig);
-                
-            // } else {
-            // console.log(resolvePath);
-            // console.log(config[targetIndex]);
-            // let originalConfig = resolve(resolvePath, config[targetIndex])
-            // console.log(originalConfig);
-            // }
-            imgData = 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg'
+            // set target image for source div
+            const targetImage = targetImageString[1];
+            imgDataSource = targetImage;
+            // set source image for target div
+            const sourceBackgroundImageURL = sourceDiv.childNodes[0].style.backgroundImage.split('"');
+            const sourceBackgroundImage = sourceBackgroundImageURL[1]
+            imgData = sourceBackgroundImage
         }
-
-        console.log(keyPath);
-        console.log(targetId)
-        console.log(resolvePath);
-        console.log(document.getElementById(targetId).childNodes);
-
-        if (newId === targetId && typeof newLayout[targetIndex].mode === 'undefined'){
-             newLayout[targetIndex].image = imgData
+            
+        if (typeof newLayout[targetIndex].mode === 'undefined'){
+            newLayout[targetIndex].image = imgData
         } else {
-             if (keyPath[keyPath.length-1] === 'split0'){
-                let originalConfig = resolve(resolvePath, config[targetIndex])
-                console.log(originalConfig);
-                originalConfig.image = imgData;
-                assign(newLayout[targetIndex], keyPath, originalConfig)
-   
+            assign(newLayout[targetIndex], keyPath, {id: targetId, image: imgData});
+        }
+        if (imgDataSource){
+            if (typeof newLayout[targetIndex].mode === 'undefined'){
+                newLayout[sourceIndex].image = imgDataSource
             } else {
-
-                let originalConfig = resolve(resolvePath, config[targetIndex])
-                console.log(originalConfig);
-                originalConfig.image = imgData;
-                assign(newLayout[targetIndex], keyPath, originalConfig)
+                assign(newLayout[sourceIndex], sourceKeyPath, {id: source, image: imgDataSource});
             }
-        }
+
+            }
         setConfig([...newLayout]);
-        
-
-          console.log(newLayout);
+    }
     
-
-    }
-
-    const drop = (ev) => {
-        ev.preventDefault();
-        const source = ev.dataTransfer.getData("source");
-        const sourceParent = ev.dataTransfer.getData("sourceParent");
-        const targetDiv = document.getElementById(ev.target.id)
-        const sourceDiv = document.getElementById(source);
+    //
+    // Obselete Black Magic Javascript Runes
+    //
+    // const drop = (ev) => {
+    //     ev.preventDefault();
+    //     const source = ev.dataTransfer.getData("source");
+    //     const sourceParent = ev.dataTransfer.getData("sourceParent");
+    //     const targetDiv = document.getElementById(ev.target.id)
+    //     const sourceDiv = document.getElementById(source);
         
-        const targetClone = targetDiv.innerHTML
-        const targetImageString = targetClone.split('&quot;');
+    //     const targetClone = targetDiv.innerHTML
+    //     const targetImageString = targetClone.split('&quot;');
         
 
         
-        if (targetDiv.childNodes.length !== 0){
-            targetDiv.removeChild(targetDiv.childNodes[0])
-        }
+    //     if (targetDiv.childNodes.length !== 0){
+    //         targetDiv.removeChild(targetDiv.childNodes[0])
+    //     }
 
-        if (sourceDiv !== null){
-            //means that the div itself has something innit
-            const sourceImg = sourceDiv.childNodes[0] || null;
+    //     if (sourceDiv !== null){
+    //         //means that the div itself has something innit
+    //         const sourceImg = sourceDiv.childNodes[0] || null;
 
-            var imgDivSource = document.createElement('img');
-            imgDivSource.style=`background-image: url(${targetImageString[1]})` 
-            imgDivSource.classList.add('editor__drag-image')
+    //         var imgDivSource = document.createElement('img');
+    //         imgDivSource.style=`background-image: url(${targetImageString[1]})` 
+    //         imgDivSource.classList.add('editor__drag-image')
 
-            if (sourceImg !== null){
-                if (sourceImg.style.backgroundImage === 'url("undefined")'){
-                    sourceDiv.removeChild(sourceDiv.childNodes[0])
-                    ev.target.appendChild(imgDivSource); 
-                } else {
-                    const background = sourceImg.style.backgroundImage
-                    var imgDiv = document.createElement('img')
-                    imgDiv.style=`background-image: ${background}`
-                    imgDiv.setAttribute('id', `image${ev.target.id}`)
-                    imgDiv.classList.add('editor__drag-image')
+    //         if (sourceImg !== null){
+    //             if (sourceImg.style.backgroundImage === 'url("undefined")'){
+    //                 sourceDiv.removeChild(sourceDiv.childNodes[0])
+    //                 ev.target.appendChild(imgDivSource); 
+    //             } else {
+    //                 const background = sourceImg.style.backgroundImage
+    //                 var imgDiv = document.createElement('img')
+    //                 imgDiv.style=`background-image: ${background}`
+    //                 imgDiv.setAttribute('id', `image${ev.target.id}`)
+    //                 imgDiv.classList.add('editor__drag-image')
 
-                    targetDiv.appendChild(imgDiv)
-                    sourceDiv.removeChild(sourceImg);
-                    sourceDiv.appendChild(imgDivSource); 
-                }
-            } else {
-                var imgDivDummy = document.createElement('img')
-                imgDivDummy.style=`background-image: url("undefined")}`
-                imgDivDummy.classList.add('editor__drag-image')
-                sourceDiv.appendChild(imgDivDummy)
-                ev.target.appendChild(imgDivSource);
-            }
+    //                 targetDiv.appendChild(imgDiv)
+    //                 sourceDiv.removeChild(sourceImg);
+    //                 sourceDiv.appendChild(imgDivSource); 
+    //             }
+    //         } else {
+    //             var imgDivDummy = document.createElement('img')
+    //             imgDivDummy.style=`background-image: url("undefined")}`
+    //             imgDivDummy.classList.add('editor__drag-image')
+    //             sourceDiv.appendChild(imgDivDummy)
+    //             ev.target.appendChild(imgDivSource);
+    //         }
 
-        } else {
-            var data = ev.dataTransfer.getData("text");
-            var img = document.createElement('img'); 
-            img.style=`background-image: url(${data})`
-            img.classList.add('editor__drag-image')
-            ev.target.appendChild(img);
-        }
-    }
+    //     } else {
+    //         var data = ev.dataTransfer.getData("text");
+    //         var img = document.createElement('img'); 
+    //         img.style=`background-image: url(${data})`
+    //         img.classList.add('editor__drag-image')
+    //         ev.target.appendChild(img);
+    //     }
+    // }
 
 
     const handleFirstSplit = (split) =>{    
@@ -217,32 +228,33 @@ export default function Editor(){
     }
 
     const handleSplit0 = (split) =>{
-
         // const {image} = split; 
         if(typeof split !== 'undefined'){
-        return(
-            <Grid container item id={`id${split.id}`} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
-                <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
-                    {handleSplit0(split.split0)}
-                </Grid>
-                <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split1?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
-                    {handleSplit1(split.split1)}
-                </Grid>
-            </Grid>
-        )
-        }
-        return(
-            <>
-                <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
-            </>
-        )
+            if (split.mode){
+                return(
+                    <Grid container item id={`id${split.id}`} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
+                        <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                            {handleSplit0(split.split0)}
+                        </Grid>
+                        <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split1?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                            {handleSplit1(split.split1)}
+                        </Grid>
+                    </Grid>
+                )
+            }
+
+            return(
+                <>
+                    <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
+                </>
+            )      
+        }       
     }
 
     const handleSplit1 = (split) =>{
         
-        // const {image} = split; 
-
         if(typeof split !== 'undefined'){
+            if (split.mode){
             return(
                 <Grid container item id={`id${split.id}`} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
                     <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split0 !== 'undefined' ?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
@@ -253,12 +265,14 @@ export default function Editor(){
                     </Grid>
                 </Grid>
             )
+            }
+            return(    
+                <>
+                    <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
+                </>
+            )
         }
-        return(    
-            <>
-                <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
-            </>
-        )
+
     }
  
     const split = (mode) => {
@@ -322,10 +336,6 @@ export default function Editor(){
     useEffect(()=>{
         setConfig(defaultLayout)
     },[])
-
-    useEffect(()=>{
-        console.log(config)
-    },[config])
 
     return(
         <Container id='main__container' className='editor__container' maxWidth="sm">
