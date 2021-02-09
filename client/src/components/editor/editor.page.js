@@ -27,24 +27,6 @@ const defaultLayout = [
     {
         id: '3',
     },
-    {
-        id: '4',
-        image: 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg',
-        mode: 'horizontal',
-        split0:{
-            id: '40',
-            image: 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg',
-            mode: 'vertical',
-            split0:{
-                id:'400',
-                image: 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg'
-            }
-        },
-        split1:{
-            id: '41',
-            image:  'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg'
-        }
-    }
 ]
 
 let layoutList = [];
@@ -75,7 +57,6 @@ export default function Editor(){
     const dropObject = (ev) =>{
         const source = ev.dataTransfer.getData("source");
         const sourceIndex = source[0];
-        const sourceParent = ev.dataTransfer.getData("sourceParent");
         const targetId = ev.target.id;
         const targetIndex = targetId[0];
         const targetDiv = document.getElementById(ev.target.id)
@@ -120,11 +101,12 @@ export default function Editor(){
             imgData = ev.dataTransfer.getData("text");  
         } else {
             // set target image for source div
-            const targetImage = targetImageString[1];
+            const targetImage = targetDivClone.indexOf('http') !== -1 ? targetImageString[1] : '1';
             imgDataSource = targetImage;
             // set source image for target div
-            const sourceBackgroundImageURL = sourceDiv.childNodes[0].style.backgroundImage.split('"');
-            const sourceBackgroundImage = sourceBackgroundImageURL[1]
+
+            const sourceBackgroundImageURL = sourceDiv.childNodes[0] ? sourceDiv.childNodes[0].style.backgroundImage.split('"') : '';
+            const sourceBackgroundImage = sourceDiv.childNodes[0] ? sourceBackgroundImageURL[1] : '';
             imgData = sourceBackgroundImage
         }
             
@@ -134,13 +116,13 @@ export default function Editor(){
             assign(newLayout[targetIndex], keyPath, {id: targetId, image: imgData});
         }
         if (imgDataSource){
-            if (typeof newLayout[targetIndex].mode === 'undefined'){
+            if (typeof newLayout[sourceIndex].mode === 'undefined'){
                 newLayout[sourceIndex].image = imgDataSource
             } else {
                 assign(newLayout[sourceIndex], sourceKeyPath, {id: source, image: imgDataSource});
             }
 
-            }
+        }
         setConfig([...newLayout]);
     }
     
@@ -221,14 +203,13 @@ export default function Editor(){
         return(
             <Grid container  direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className='editor__box-row'>
                 <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} container direction={split.mode==='vertical'?'row':'column'} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
-                    <img className='editor__drag-image' style={split.image?{backgroundImage: `url(${split.image})`}:{}}></img>
+                    <img className='editor__drag-image' style={{backgroundImage: `url(${split.image?split.image:''})`}}></img>
                 </Grid>
             </Grid>
         ) 
     }
 
     const handleSplit0 = (split) =>{
-        // const {image} = split; 
         if(typeof split !== 'undefined'){
             if (split.mode){
                 return(
@@ -242,34 +223,32 @@ export default function Editor(){
                     </Grid>
                 )
             }
-
-            return(
-                <>
-                    <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
-                </>
+                return(
+                    <>
+                        <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
+                    </>
             )      
         }       
     }
 
     const handleSplit1 = (split) =>{
-        
         if(typeof split !== 'undefined'){
             if (split.mode){
-            return(
-                <Grid container item id={`id${split.id}`} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
-                    <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split0 !== 'undefined' ?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
-                        {handleSplit0(split.split0)}
+                return(
+                    <Grid container item id={`id${split.id}`} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
+                        <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split0 !== 'undefined' ?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                            {handleSplit0(split.split0)}
+                        </Grid>
+                        <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split1 !== 'undefined' ?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                            {handleSplit1(split.split1)}
+                        </Grid>
                     </Grid>
-                    <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split1 !== 'undefined' ?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
-                        {handleSplit1(split.split1)}
-                    </Grid>
-                </Grid>
-            )
+                )
             }
-            return(    
-                <>
-                    <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
-                </>
+                return(    
+                    <>
+                        <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
+                    </>
             )
         }
 
@@ -281,12 +260,7 @@ export default function Editor(){
         const id = actionTarget[0];
         let newLayout = config;
         let keyPath = [];
-        let newId = id;
-        var targetDiv = document.getElementById(actionTarget)
-        
-        // if (targetDiv.childNodes.length !== 0){
-        //     targetDiv.removeChild(targetDiv.childNodes[0])
-        // }    
+        let newId = id; 
 
         for (var i = 1; i < actionTarget.length; i++){
            if (actionTarget[i] === '0'){
