@@ -4,6 +4,7 @@ import Container from '@material-ui/core/Container';
 import assign from '../../scripts/assign';
 
 import './editor.style.scss';
+import resolve from '../../scripts';
 
 const imageList = [
     'https://static5.depositphotos.com/1000350/432/i/950/depositphotos_4327684-stock-photo-doctor-with-stethoscope-fixing-laptop.jpg',
@@ -26,6 +27,10 @@ const defaultLayout = [
     },
     {
         id: '3',
+    },
+    {
+        id: '4',
+        img: 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg'
     }
 ]
 
@@ -39,6 +44,7 @@ export default function Editor(){
 
     const addTarget = (ev) => {
         setActionTarget(ev.target.id);   
+        console.log(ev.target.id);
     }
 
     const allowDrop = (ev) => {
@@ -53,6 +59,83 @@ export default function Editor(){
         ev.dataTransfer.setData("sourceParent", sourceParent);
     }
       
+
+    const dropObject = (ev) =>{
+        const source = ev.dataTransfer.getData("source");
+        const sourceParent = ev.dataTransfer.getData("sourceParent");
+        const targetId = ev.target.id;
+        const targetIndex = targetId[0];
+        const targetDiv = document.getElementById(ev.target.id)
+        const sourceDiv = document.getElementById(source);
+        let imgData = ev.dataTransfer.getData("text");
+               
+        let newLayout = config;
+        let keyPath = [];   
+        let newId = targetId
+
+        for (var i = 2; i < targetId.length; i++){
+            if (targetId[i] === '0'){
+                keyPath.push('split0')
+                newId += targetId[i];
+            } else if (targetId[i] === '1'){
+                keyPath.push('split1')
+                newId += targetId[i];
+            } else {
+                break;
+            }
+        }
+
+        let resolvePath = keyPath.join('.')
+        
+        console.log(keyPath)
+
+        if (source === ''){
+            imgData = ev.dataTransfer.getData("text");
+        } else {
+
+            // if (resolvePath === ''){
+            //     let originalConfig = config[targetIndex];
+            //     console.log(originalConfig);
+                
+            // } else {
+            // console.log(resolvePath);
+            // console.log(config[targetIndex]);
+            // let originalConfig = resolve(resolvePath, config[targetIndex])
+            // console.log(originalConfig);
+            // }
+            imgData = 'https://cdn.theatlantic.com/static/mt/assets/science/cat_caviar.jpg'
+        }
+
+        console.log(keyPath);
+        console.log(targetId)
+        console.log(resolvePath);
+        console.log(document.getElementById(targetId).childNodes);
+
+        if (newId === targetId && typeof newLayout[targetIndex].mode === 'undefined'){
+             newLayout[targetIndex].image = imgData
+        } else {
+             if (keyPath[keyPath.length-1] === 'split0'){
+                let originalConfig = resolve(resolvePath, config[targetIndex])
+                console.log(originalConfig);
+                originalConfig.image = imgData;
+                assign(newLayout[targetIndex], keyPath, originalConfig)
+   
+            } else {
+
+                let originalConfig = resolve(resolvePath, config[targetIndex])
+                console.log(originalConfig);
+                originalConfig.image = imgData;
+                assign(newLayout[targetIndex], keyPath, originalConfig)
+            }
+        }
+        setConfig([...newLayout]);
+        
+
+          console.log(newLayout);
+    
+
+    }
+
     const drop = (ev) => {
         ev.preventDefault();
         const source = ev.dataTransfer.getData("source");
@@ -68,6 +151,7 @@ export default function Editor(){
         if (targetDiv.childNodes.length !== 0){
             targetDiv.removeChild(targetDiv.childNodes[0])
         }
+
         if (sourceDiv !== null){
             //means that the div itself has something innit
             const sourceImg = sourceDiv.childNodes[0] || null;
@@ -109,60 +193,71 @@ export default function Editor(){
     }
 
 
-    const handleFirstSplit = (split) =>{        
+    const handleFirstSplit = (split) =>{    
+        // const {image} = split; 
         if (split.mode){
         return(
-            <Grid container id={split.id} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className='editor__box-row'>
-                <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} container direction={split.mode==='vertical'?'row':'column'} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+            <Grid container  direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className='editor__box-row'>
+                <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} container direction={split.mode==='vertical'?'row':'column'} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
                     {handleSplit0(split.split0)}
                 </Grid>   
-                <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} container direction={split.mode==='vertical'?'row':'column'} tabindex='0' item xs id={split.split1?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>        
+                <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} container direction={split.mode==='vertical'?'row':'column'} tabindex='0' item xs id={split.split1?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>        
                     {handleSplit1(split.split1)}
                 </Grid>   
             </Grid>
         )   
         }
         return(
-            <Grid container id={split.id} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className='editor__box-row'>
-                <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} container direction={split.mode==='vertical'?'row':'column'} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+            <Grid container  direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className='editor__box-row'>
+                <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} container direction={split.mode==='vertical'?'row':'column'} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                    <img className='editor__drag-image' style={split.image?{backgroundImage: `url(${split.image})`}:{}}></img>
                 </Grid>
             </Grid>
         ) 
     }
 
     const handleSplit0 = (split) =>{
+
+        // const {image} = split; 
         if(typeof split !== 'undefined'){
         return(
             <Grid container item id={`id${split.id}`} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
-                <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split0?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
                     {handleSplit0(split.split0)}
                 </Grid>
-                <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split1?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={split.split1?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
                     {handleSplit1(split.split1)}
                 </Grid>
             </Grid>
         )
         }
         return(
-            <></>
+            <>
+                <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
+            </>
         )
     }
 
     const handleSplit1 = (split) =>{
+        
+        // const {image} = split; 
+
         if(typeof split !== 'undefined'){
             return(
                 <Grid container item id={`id${split.id}`} direction={split.mode==='vertical'?'row':'column'} key={`box${split.id}`} className={split.mode==='vertical'?'editor__box':'editor__box__col'}>
-                    <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split0 !== 'undefined' ?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                    <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split0 !== 'undefined' ?split.split0.id:split.id+'0'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
                         {handleSplit0(split.split0)}
                     </Grid>
-                    <Grid onDrop={(e)=>drop(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split1 !== 'undefined' ?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
+                    <Grid onDrop={(e)=>dropObject(e)} onDragOver={(e)=>allowDrop(e)} draggable="true" onDragStart={(e)=>drag(e)} tabindex='0' item xs id={typeof split.split1 !== 'undefined' ?split.split1.id:split.id+'1'} style={{border: '0.1px solid lightgrey'}} onClick={(e)=>addTarget(e)}>
                         {handleSplit1(split.split1)}
                     </Grid>
                 </Grid>
             )
         }
         return(    
-            <></>
+            <>
+                <img className='editor__drag-image' style={{backgroundImage: `url(${split ? split.image : ''})`}}></img>
+            </>
         )
     }
  
@@ -174,10 +269,10 @@ export default function Editor(){
         let keyPath = [];
         let newId = id;
         var targetDiv = document.getElementById(actionTarget)
-
-        if (targetDiv.childNodes.length !== 0){
-        targetDiv.removeChild(targetDiv.childNodes[0])
-        }
+        
+        // if (targetDiv.childNodes.length !== 0){
+        //     targetDiv.removeChild(targetDiv.childNodes[0])
+        // }    
 
         for (var i = 1; i < actionTarget.length; i++){
            if (actionTarget[i] === '0'){
@@ -227,6 +322,10 @@ export default function Editor(){
     useEffect(()=>{
         setConfig(defaultLayout)
     },[])
+
+    useEffect(()=>{
+        console.log(config)
+    },[config])
 
     return(
         <Container id='main__container' className='editor__container' maxWidth="sm">
