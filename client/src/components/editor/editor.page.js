@@ -47,6 +47,8 @@ export default function Editor(){
       
     const drag = (ev) => {
         ev.dataTransfer.setData("text", ev.target.id);
+        //for mac
+        ev.dataTransfer.setData("src", ev.target.src);
         const source = ev.target.id ? document.getElementById(ev.target.id).id : '';
         const sourceParent = ev.target.id ? document.getElementById(ev.target.id).parentNode.id : '';
         ev.dataTransfer.setData("source", source)
@@ -98,7 +100,7 @@ export default function Editor(){
         }
 
         if (source === ''){
-            imgData = ev.dataTransfer.getData("text");  
+            imgData = ev.dataTransfer.getData("src");
         } else {
             // set target image for source div
             const targetImage = targetDivClone.indexOf('http') !== -1 ? targetImageString[1] : '1';
